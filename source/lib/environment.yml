@@ -1,0 +1,14 @@
+name: information-market
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - ipykernel
+  - matplotlib
+  - numpy
+  - pandas
+  - pip
+  - pyarrow
+  - pyjanitor
+  - rclone
+  - scons
