@@ -6,5 +6,7 @@ The datastore is [inflation-expectations](https://drive.google.com/drive/folders
 
 To execute from the root (if other requirements are met):
 
+```
 . export PYTHONPATH=.
 . scons
+```
