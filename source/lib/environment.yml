@@ -1,4 +1,4 @@
-name: information-market
+name: inflation-expectations
 channels:
   - conda-forge
 dependencies:
