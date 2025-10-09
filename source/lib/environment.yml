@@ -6,6 +6,7 @@ dependencies:
   - ipykernel
   - matplotlib
   - numpy
+  - openpyxl
   - pandas
   - pip
   - pyarrow
