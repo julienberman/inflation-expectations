@@ -116,7 +116,6 @@ def clean_date(date, output_format="%Y-%m-%d", aggregation=None):
             if pd.notna(val) and val:
                 test_date = val
                 break
-        print("Test date: ", test_date)
         if not test_date:
             return pd.Series(pd.NA, dtype='object')
         
@@ -125,7 +124,6 @@ def clean_date(date, output_format="%Y-%m-%d", aggregation=None):
         for pattern, regex in PATTERNS.items():
             if re.match(regex, test_date):
                 format = pattern
-        print("Format: ", format)
         
         if format in ["dd/mm/yyyy", "dd/mm/yy"]:
             extracted = date.str.extract(PATTERNS[format])
