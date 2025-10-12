@@ -53,8 +53,7 @@ def clean_date(date, output_format="%Y-%m-%d", aggregation=None):
         "dec": "12", "december": "12"
     }
     PATTERNS = {
-        "dd/mm/yyyy": r'(\d{1,2})/([a-z]{3})/(\d{4})',
-        "dd/mm/yy": r'(\d{1,2})/([a-z]{3})/(\d{2})',
+        "dd/mm/yyyy": r'(\d{1,2})/(\d{1,3})/(\d{2,4})',
         "dd/mon/yyyy": r'(\d{1,2})/([a-z]{3})/(\d{4})',
         "dd-mon-yyyy": r'(\d{1,2})-([a-z]{3})-(\d{4})',
         'month dd, yyyy': r'\s*([a-z]{3,9})\s*(\d{1,2}),\s*(\d{4})\s*',
@@ -78,12 +77,10 @@ def clean_date(date, output_format="%Y-%m-%d", aggregation=None):
         
         if format in ["dd/mm/yyyy", "dd/mm/yy"]:
             day, month, year = re.match(PATTERNS[format], date).groups()
-            if len(year) == 2:
-                year = normalize_two_digit_year(year)
             month = MONTH_MAP[month]
             result = pd.to_datetime(f"{year}-{month}-{day.zfill(2)}", errors='coerce')
         
-        if format in ["dd/mon/yyyy", "dd-mon-yyyy"]:
+        elif format in ["dd/mon/yyyy", "dd-mon-yyyy"]:
             day, month, year = re.match(PATTERNS[format], date).groups()
             month = MONTH_MAP[month]
             result = pd.to_datetime(f"{year}-{month}-{day.zfill(2)}", errors='coerce')
@@ -112,14 +109,14 @@ def clean_date(date, output_format="%Y-%m-%d", aggregation=None):
         return result
     
     elif isinstance(date, pd.Series):
-        date = clean_text(date.astype(str))
+        date = clean_text(date.astype("string"))
         
         test_date = None
         for val in date:
             if pd.notna(val) and val:
                 test_date = val
                 break
-
+        print("Test date: ", test_date)
         if not test_date:
             return pd.Series(pd.NA, dtype='object')
         
@@ -128,8 +125,14 @@ def clean_date(date, output_format="%Y-%m-%d", aggregation=None):
         for pattern, regex in PATTERNS.items():
             if re.match(regex, test_date):
                 format = pattern
+        print("Format: ", format)
+        
+        if format in ["dd/mm/yyyy", "dd/mm/yy"]:
+            extracted = date.str.extract(PATTERNS[format])
+            extracted.columns = ["day", "month", "year"]
+            result = pd.to_datetime(extracted["year"] + "-" + extracted["month"] + "-" + extracted["day"].str.zfill(2), format=output_format, errors="coerce")
 
-        if format in ["dd/mon/yyyy", "dd-mon-yyyy"]:
+        elif format in ["dd/mon/yyyy", "dd-mon-yyyy"]:
             extracted = date.str.extract(PATTERNS[format])
             extracted.columns = ["day", "month", "year"]
             extracted["month"] = extracted["month"].map(MONTH_MAP)
@@ -164,11 +167,4 @@ def clean_date(date, output_format="%Y-%m-%d", aggregation=None):
     else:
         raise TypeError("Input must be a string or a pandas Series.")
 
-def normalize_two_digit_year(year):
-    year_str = str(year).strip()
-    if not re.fullmatch(r"\d{2}", year_str):
-        raise ValueError("Input must be a two-digit year (e.g. '23' or 23).")
-    return int(f"20{year_str}") if int(year_str) < 50 else int(f"19{year_str}")
-
-    
 
