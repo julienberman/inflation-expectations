@@ -6,8 +6,8 @@ helpers = [
 
 source = [
     '#source/analysis/plot_elasticities_refi_move.py',
-    '#output/derived/sce/sce_housing.csv'
-    '#output/derived/sce/sce_credit.csv'
+    '#output/derived/sce/sce_housing.csv',
+    '#output/derived/sce/sce_credit.csv',
     '#output/derived/mortgage_rates/mortgage30us.csv'
 ] + helpers
 

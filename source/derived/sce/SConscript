@@ -2,7 +2,7 @@ Import('*')
 
 helpers = [
     '#source/lib/helpers/process_text.py',
-    '#source/lib/helpers/save_data.py'
+    '#source/lib/save_data.py'
 ]
 
 source = [
@@ -12,7 +12,7 @@ source = [
 ] + helpers
 
 target = [
-    '#output/derived/sce/sce_credit.csv'
+    '#output/derived/sce/sce_credit.csv',
     '#output/derived/sce/sce_credit.log'
 ]
 
@@ -21,7 +21,7 @@ env.Python(target, source)
 helpers = [
     '#source/lib/config.json',
     '#source/lib/helpers/process_text.py',
-    '#source/lib/helpers/save_data.py'
+    '#source/lib/save_data.py'
 ]
 
 source = [
@@ -31,9 +31,10 @@ source = [
 ] + helpers
 
 target = [
-    '#output/derived/sce/sce_housing.csv'
+    '#output/derived/sce/sce_housing.csv',
     '#output/derived/sce/sce_housing.log'
 ]
+
 env.Python(target, source)
 
 # helpers = [

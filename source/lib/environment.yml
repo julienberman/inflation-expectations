@@ -12,6 +12,7 @@ dependencies:
   - pip
   - pyarrow
   - pyjanitor
+  - pyyaml
   - rclone
   - scons
   - scipy

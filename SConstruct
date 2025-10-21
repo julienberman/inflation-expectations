@@ -28,4 +28,5 @@ SConscript('source/analysis/SConscript')
 SConscript('source/tables/SConscript')
 SConscript('source/figures/SConscript')
 SConscript('source/paper/SConscript')
-SConscript('source/talk/SConscript')
+# SConscript('source/talk/SConscript')
+
