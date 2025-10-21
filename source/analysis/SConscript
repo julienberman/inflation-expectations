@@ -1,28 +1,21 @@
 Import('*')
 
-target = ['#output/analysis/top_gdp/sconscript.log',
-          '#output/analysis/top_gdp/top_gdp.txt']
-source = ['#source/analysis/top_gdp/top_gdp_table.R',
-          '#output/derived/wb_clean/gdp_education.csv']
-env.R(target, source) 
+helpers = [
+    '#source/lib/helpers/plot.py'
+]
 
-target = ['#output/analysis/top_gdp/top_gdp.tex']
-source = ['#source/analysis/top_gdp/topgdp_value.py',
-          '#output/derived/wb_clean/gdp_education.csv']
-env.Python(target, source) 
+source = [
+    '#source/analysis/plot_elasticities_refi_move.py',
+    '#output/derived/sce/sce_housing.csv'
+    '#output/derived/sce/sce_credit.csv'
+    '#output/derived/mortgage_rates/mortgage30us.csv'
+] + helpers
 
-target = ['#output/analysis/plots/sconscript.log',
-          '#output/analysis/plots/gdp_educ.eps',
-          '#output/analysis/plots/gdp_educ.png']
-source = ['#source/analysis/plots/makeplot.m',
-          '#output/derived/wb_clean/gdp_education_logs.csv']
-env.Matlab(target, source)
+target = [
+    '#output/analysis/elasticity_sell_home.png',
+    '#output/analysis/elasticity_refi.png'
+]
 
-
-target = ['#output/analysis/plots/educ_gdp.eps',
-          '#output/analysis/plots/educ_gdp.png']
-source = ['#source/analysis/plots/makeplot.py',
-          '#output/derived/wb_clean/gdp_education_logs.csv']
 env.Python(target, source)
 
 

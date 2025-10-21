@@ -1,0 +1,19 @@
+Import('*')
+
+helpers = [
+    '#source/lib/api_keys.json',
+    '#source/lib/helpers/process_text.py',
+    '#source/lib/helpers/save_data.py'
+]
+
+source = [
+    '#source/derived/mortgage_rates/build_mortgage30us.py',
+] + helpers
+
+target = [
+    '#output/derived/mortgage_rates/mortgage30us.csv'
+    '#output/derived/mortgage_rates/mortgage30us.log'
+]
+env.Python(target, source)
+
+

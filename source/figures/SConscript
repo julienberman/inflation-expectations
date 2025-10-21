@@ -1,11 +1,13 @@
 Import('*')
 
-target = ['#source/figures/gdp_educ.lyx']
-source = ['#output/analysis/plots/gdp_educ.eps']
+target = []
+source = []
 
 env.Depends(target = target, dependency = source)
 
-target = ['#source/figures/gdp_educ.tex']
-source = ['#output/analysis/plots/gdp_educ.eps']
+target = []
+source = []
 
 env.Depends(target = target, dependency = source)
+
+

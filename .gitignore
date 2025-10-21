@@ -1,6 +1,7 @@
 /drive
 /datastore
 /temp
+/source/lib/api_keys.json
 *.pyc
 *.lyx~
 *.lyx#

@@ -8,7 +8,7 @@ from source.lib.save_data import save_data
 def main():
     INDIR = Path('datastore/raw/sce_credit/data')
     INDIR_CW = Path('datastore/raw/crosswalks/data')
-    OUTDIR = Path('datastore/output/derived/sce')
+    OUTDIR = Path('output/derived/sce')
     
     sce_credit = pd.read_excel(
         INDIR / 'FRBNY-SCE-Credit-Access-complete_microdata.xlsx',
@@ -37,23 +37,24 @@ def clean_sce_credit(sce_credit, cw_sce_credit):
         sce_credit
         .rename(columns=rename_sce_credit)
         .clean_names()
-        .assign(date = lambda x: clean_date(x['date']))
+        .assign(date = lambda x: clean_date(x['date'], aggregation='month'))
     )
     return sce_credit_clean
 
 def harmonize_likelihood_variables(df):
     mapping = {1: 10, 2: 30, 3: 50, 4: 70, 5: 90}
-    likelihood_vars = [
-        "credit_card", "mortgage", "auto_loan",
-        "increase_loan_limit", "increase_credit_limit",
-        "refi", "student_loan"
-    ]
-
     df_harmonized = (
-        df.assign(**{f"likelihood_apply_{v}":df[f"likelihood_apply_{v}_type_a"].map(mapping).fillna(df[f"likelihood_apply_{v}_type_b"])
-            for v in likelihood_vars
-        })
-        .drop(columns=[f"likelihood_apply_{v}_type_a" for v in likelihood_vars] +[f"likelihood_apply_{v}_type_b" for v in likelihood_vars])
+        df
+        .assign(
+            likelihood_apply_credit_card_1y_ahead = lambda x: x['likelihood_apply_credit_card_1y_ahead_type_a'].map(mapping).fillna(x['likelihood_apply_credit_card_1y_ahead_type_b']),
+            likelihood_apply_home_loan_1y_ahead = lambda x: x['likelihood_apply_home_loan_1y_ahead_type_a'].map(mapping).fillna(x['likelihood_apply_home_loan_1y_ahead_type_b']),
+            likelihood_apply_auto_loan_1y_ahead = lambda x: x['likelihood_apply_auto_loan_1y_ahead_type_a'].map(mapping).fillna(x['likelihood_apply_auto_loan_1y_ahead_type_b']),
+            likelihood_increase_loan_limit_1y_ahead = lambda x: x['likelihood_increase_loan_limit_1y_ahead_type_a'].map(mapping).fillna(x['likelihood_increase_loan_limit_1y_ahead_type_b']),
+            likelihood_increase_credit_limit_1y_ahead = lambda x: x['likelihood_increase_credit_limit_1y_ahead_type_a'].map(mapping).fillna(x['likelihood_increase_credit_limit_1y_ahead_type_b']),
+            likelihood_refi_1y_ahead = lambda x: x['likelihood_refi_1y_ahead_type_a'].map(mapping).fillna(x['likelihood_refi_1y_ahead_type_b']),
+            likelihood_apply_student_loan_1y_ahead = lambda x: x['likelihood_apply_student_loan_1y_ahead_type_a'].map(mapping).fillna(x['likelihood_apply_student_loan_1y_ahead_type_b']),
+        )
+        .drop(columns=df.columns[df.columns.str.contains('likelihood_.*_type_*')])
     )
     return df_harmonized
 

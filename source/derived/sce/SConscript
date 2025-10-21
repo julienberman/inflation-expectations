@@ -1,0 +1,52 @@
+Import('*')
+
+helpers = [
+    '#source/lib/helpers/process_text.py',
+    '#source/lib/helpers/save_data.py'
+]
+
+source = [
+    '#source/derived/sce/build_sce_credit.py',
+    '#datastore/raw/sce_credit/data/FRBNY-SCE-Credit-Access-complete_microdata.xlsx',
+    '#datastore/raw/crosswalks/data/cw_sce_credit.csv'
+] + helpers
+
+target = [
+    '#output/derived/sce/sce_credit.csv'
+    '#output/derived/sce/sce_credit.log'
+]
+
+env.Python(target, source)
+
+helpers = [
+    '#source/lib/config.json',
+    '#source/lib/helpers/process_text.py',
+    '#source/lib/helpers/save_data.py'
+]
+
+source = [
+    '#source/derived/sce/build_sce_housing.py',
+    '#datastore/raw/sce_housing/data/FRBNY-SCE-Housing-Survey-Public-Microdata-Complete.xlsx',
+    '#datastore/raw/crosswalks/data/cw_sce_housing.csv'
+] + helpers
+
+target = [
+    '#output/derived/sce/sce_housing.csv'
+    '#output/derived/sce/sce_housing.log'
+]
+env.Python(target, source)
+
+# helpers = [
+    
+# ]
+
+# source = [
+#     '#source/derived/sce/build_sce_core.py'
+# ] + helpers
+
+# target = [
+#     '#output/derived/sce/sce_core.csv'
+# ]
+
+# env.Python(target, source)
+

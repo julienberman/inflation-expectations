@@ -1,0 +1,10 @@
+File: output/derived/mortgage_rates/mortgage30us.csv
+
+MD5 hash: a0510ff3ba8fb7d34199516a49670b28
+
+Keys: date 
+
+                    type count   unique   mean    std    min    50%     max
+date           period[M]   655  655.000    nan    nan    nan    nan     nan
+mortgage_rate    float64   655      nan  7.702  3.200  2.684  7.294  18.454
+

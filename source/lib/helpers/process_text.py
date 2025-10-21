@@ -38,6 +38,15 @@ def clean_text(text, normalize=True, lower=True, remove_whitespace=True, remove_
 
 
 def clean_date(date, output_format="%Y-%m-%d", aggregation=None):
+    """
+    Clean and standardize date formats.
+    
+    Returns:
+    - If aggregation='year': Period with year precision (displays as '2023')
+    - If aggregation='month': Period with month precision (displays as '2023-01')
+    - Otherwise: datetime64 (displays as '2023-01-15' in DataFrames)
+    - If as_string=True: String formatted according to output_format
+    """
     MONTH_MAP = {
         "jan": "01", "january": "01",
         "feb": "02", "february": "02",
@@ -52,7 +61,9 @@ def clean_date(date, output_format="%Y-%m-%d", aggregation=None):
         "nov": "11", "november": "11",
         "dec": "12", "december": "12"
     }
+    
     PATTERNS = {
+        "yyyy-mm-dd": r'(\d{4})-(\d{2})-(\d{2})',
         "dd/mm/yyyy": r'(\d{1,2})/(\d{1,3})/(\d{2,4})',
         "dd/mon/yyyy": r'(\d{1,2})/([a-z]{3})/(\d{4})',
         "dd-mon-yyyy": r'(\d{1,2})-([a-z]{3})-(\d{4})',
@@ -62,50 +73,70 @@ def clean_date(date, output_format="%Y-%m-%d", aggregation=None):
         'month, yyyy': r'([a-z]{3,9}),\s*(\d{4})',
         'yyyymm': r'(\d{4})(\d{2})'
     }
+    
     if aggregation and aggregation not in ["day", "month", "year"]:
-        raise ValueError("`Aggregation` must be either 'day', 'month', 'year', or `None`.")
+        raise ValueError("`aggregation` must be either 'day', 'month', 'year', or `None`.")
+    
+    if isinstance(date, pd.Series) and pd.api.types.is_datetime64_any_dtype(date):
+        result = date.dt.floor('D')
+        if aggregation == "year":
+            return result.dt.to_period('Y')
+        elif aggregation == "month":
+            return result.dt.to_period('M')
+        return result
     
     if isinstance(date, str):
         date = clean_text(str(date))
         if not date:
             return pd.NA
-        format = None
         
-        for pattern, regex in PATTERNS.items():
+        matched_format = None
+        for pattern_name, regex in PATTERNS.items():
             if re.match(regex, date):
-                format = pattern
+                matched_format = pattern_name
+                break
         
-        if format in ["dd/mm/yyyy", "dd/mm/yy"]:
-            day, month, year = re.match(PATTERNS[format], date).groups()
-            month = MONTH_MAP[month]
+        if not matched_format:
+            return pd.NA
+        
+        if matched_format == "yyyy-mm-dd":
+            result = pd.to_datetime(date, format="%Y-%m-%d", errors='coerce')
+            
+        elif matched_format in ["dd/mm/yyyy", "dd/mm/yy"]:
+            day, month, year = re.match(PATTERNS[matched_format], date).groups()
+            result = pd.to_datetime(f"{year}-{month.zfill(2)}-{day.zfill(2)}", errors='coerce')
+        
+        elif matched_format in ["dd/mon/yyyy", "dd-mon-yyyy"]:
+            day, month, year = re.match(PATTERNS[matched_format], date).groups()
+            month = MONTH_MAP[month.lower()]
             result = pd.to_datetime(f"{year}-{month}-{day.zfill(2)}", errors='coerce')
         
-        elif format in ["dd/mon/yyyy", "dd-mon-yyyy"]:
-            day, month, year = re.match(PATTERNS[format], date).groups()
-            month = MONTH_MAP[month]
+        elif matched_format == "month dd, yyyy":
+            month, day, year = re.match(PATTERNS[matched_format], date).groups()
+            month = MONTH_MAP[month.lower()]
             result = pd.to_datetime(f"{year}-{month}-{day.zfill(2)}", errors='coerce')
         
-        elif format in ["month dd, yyyy"]:
-            month, day, year = re.match(PATTERNS[format], date).groups()
-            month = MONTH_MAP[month]
-            result = pd.to_datetime(f"{year}-{month}-{day.zfill(2)}", errors='coerce')
+        elif matched_format in ["mm/yyyy", "mm-yyyy"]:
+            month, year = re.match(PATTERNS[matched_format], date).groups()
+            result = pd.to_datetime(f"{year}-{month}-01", errors='coerce')
         
-        elif format in ["mm/yyyy", "mm-yyyy", "month, yyyy"]:
-            month, year = re.match(PATTERNS[format], date).groups()
-            result = pd.to_datetime(f"{year}-{month}-01", format="%Y-%m-%d", errors='coerce')       
+        elif matched_format == "month, yyyy":
+            month, year = re.match(PATTERNS[matched_format], date).groups()
+            month = MONTH_MAP[month.lower()]
+            result = pd.to_datetime(f"{year}-{month}-01", errors='coerce')
         
-        elif format in ["yyyymm"]:
-            year, month = re.match(PATTERNS[format], date).groups()
-            result = pd.to_datetime(f"{year}-{month}-01", format="%Y-%m-%d", errors='coerce')
+        elif matched_format == "yyyymm":
+            year, month = re.match(PATTERNS[matched_format], date).groups()
+            result = pd.to_datetime(f"{year}-{month}-01", errors='coerce')
         
         else:
             return pd.NA
         
         if aggregation == "year":
-            result = result.replace(month=1, day=1)
+            return result.to_period('Y')
         elif aggregation == "month":
-            result = result.replace(day=1)
-        
+            return result.to_period('M')
+            
         return result
     
     elif isinstance(date, pd.Series):
@@ -116,53 +147,84 @@ def clean_date(date, output_format="%Y-%m-%d", aggregation=None):
             if pd.notna(val) and val:
                 test_date = val
                 break
+        
         if not test_date:
-            return pd.Series(pd.NA, dtype='object')
+            return pd.Series(pd.NA, index=date.index, dtype='object')
         
-        format = None
-    
-        for pattern, regex in PATTERNS.items():
+        matched_format = None
+        for pattern_name, regex in PATTERNS.items():
             if re.match(regex, test_date):
-                format = pattern
+                matched_format = pattern_name
+                break
         
-        if format in ["dd/mm/yyyy", "dd/mm/yy"]:
-            extracted = date.str.extract(PATTERNS[format])
-            extracted.columns = ["day", "month", "year"]
-            result = pd.to_datetime(extracted["year"] + "-" + extracted["month"] + "-" + extracted["day"].str.zfill(2), format=output_format, errors="coerce")
-
-        elif format in ["dd/mon/yyyy", "dd-mon-yyyy"]:
-            extracted = date.str.extract(PATTERNS[format])
-            extracted.columns = ["day", "month", "year"]
-            extracted["month"] = extracted["month"].map(MONTH_MAP)
-            result = pd.to_datetime(extracted["year"] + "-" + extracted["month"] + "-" + extracted["day"].str.zfill(2), format=output_format, errors="coerce")
+        if not matched_format:
+            return pd.Series(pd.NA, index=date.index, dtype='object')
         
-        elif format in ["month dd, yyyy"]:
-            extracted = date.str.extract(PATTERNS[format])
+        # Parse based on pattern
+        if matched_format == "yyyy-mm-dd":
+            result = pd.to_datetime(date, format="%Y-%m-%d", errors='coerce')
+        
+        elif matched_format in ["dd/mm/yyyy", "dd/mm/yy"]:
+            extracted = date.str.extract(PATTERNS[matched_format])
+            extracted.columns = ["day", "month", "year"]
+            result = pd.to_datetime(
+                extracted["year"] + "-" + extracted["month"].str.zfill(2) + "-" + extracted["day"].str.zfill(2),
+                errors="coerce"
+            )
+        
+        elif matched_format in ["dd/mon/yyyy", "dd-mon-yyyy"]:
+            extracted = date.str.extract(PATTERNS[matched_format])
+            extracted.columns = ["day", "month", "year"]
+            extracted["month"] = extracted["month"].str.lower().map(MONTH_MAP)
+            result = pd.to_datetime(
+                extracted["year"] + "-" + extracted["month"] + "-" + extracted["day"].str.zfill(2),
+                errors="coerce"
+            )
+        
+        elif matched_format == "month dd, yyyy":
+            extracted = date.str.extract(PATTERNS[matched_format])
             extracted.columns = ["month", "day", "year"]
-            extracted["month"] = extracted["month"].map(MONTH_MAP)
-            result = pd.to_datetime(extracted["year"] + "-" + extracted["month"] + "-" + extracted["day"].str.zfill(2), format=output_format, errors="coerce")
+            extracted["month"] = extracted["month"].str.lower().map(MONTH_MAP)
+            result = pd.to_datetime(
+                extracted["year"] + "-" + extracted["month"] + "-" + extracted["day"].str.zfill(2),
+                errors="coerce"
+            )
         
-        elif format in ["mm/yyyy", "mm-yyyy", "month, yyyy"]:
-            extracted = date.str.extract(PATTERNS[format])
+        elif matched_format in ["mm/yyyy", "mm-yyyy"]:
+            extracted = date.str.extract(PATTERNS[matched_format])
             extracted.columns = ["month", "year"]
-            result = pd.to_datetime(extracted["year"] + "-" + extracted["month"] + "-01", format=output_format, errors="coerce")
+            result = pd.to_datetime(
+                extracted["year"] + "-" + extracted["month"] + "-01",
+                errors="coerce"
+            )
         
-        elif format in ["yyyymm"]:
-            extracted = date.str.extract(PATTERNS[format])
+        elif matched_format == "month, yyyy":
+            extracted = date.str.extract(PATTERNS[matched_format])
+            extracted.columns = ["month", "year"]
+            extracted["month"] = extracted["month"].str.lower().map(MONTH_MAP)
+            result = pd.to_datetime(
+                extracted["year"] + "-" + extracted["month"] + "-01",
+                errors="coerce"
+            )
+        
+        elif matched_format == "yyyymm":
+            extracted = date.str.extract(PATTERNS[matched_format])
             extracted.columns = ["year", "month"]
-            result = pd.to_datetime(extracted["year"] + "-" + extracted["month"] + "-01", format=output_format, errors="coerce")
+            result = pd.to_datetime(
+                extracted["year"] + "-" + extracted["month"] + "-01",
+                errors="coerce"
+            )
         
         else:
-            return pd.Series(pd.NA, dtype='object')
+            return pd.Series(pd.NA, index=date.index, dtype='object')
         
         if aggregation == "year":
-            result = result.dt.to_period('Y')
+            return result.dt.to_period('Y')
         elif aggregation == "month":
-            result = result.dt.to_period('M')
+            return result.dt.to_period('M')
         
         return result
-        
+    
     else:
         raise TypeError("Input must be a string or a pandas Series.")
-
 

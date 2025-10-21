@@ -1,0 +1,36 @@
+File: output/derived/sce/sce_housing.csv
+
+MD5 hash: 35001f3e86e97a366e63079d099ae72f
+
+Keys: sce_id date 
+
+                                             type   count  unique            mean            std             min             50%              max
+sce_id                                      int64  11,255     nan  70,854,421.133  1,792,250.303  70,000,337.000  70,091,421.000   75,011,002.000
+date                                    period[M]  11,255  10.000             nan            nan             nan             nan              nan
+residence_status_own                       object  10,182   2.000             nan            nan             nan             nan              nan
+weight                                    float64  11,251     nan           1.000          0.821           0.170           0.733            9.649
+risk_aversion                             float64   7,927     nan           4.345          2.213           1.000           4.000           10.000
+credit_score                               object   9,316   5.000             nan            nan             nan             nan              nan
+value_home_current                        float64   8,224     nan     341,227.780  1,611,068.026           0.000     235,000.000  100,000,000.000
+value_home_1y_ahead                       float64   8,219     nan     343,767.784  1,488,526.119           0.000     240,000.000  100,000,000.000
+value_home_5y_ahead                       float64   8,215     nan     373,866.027  1,521,948.794           0.000     255,000.000  100,000,000.000
+likelihood_sell_home_1y_ahead             float64   8,225     nan          12.918         22.725           0.000           3.000          100.000
+mortgage_rate_type                         object   4,006   2.000             nan            nan             nan             nan              nan
+likelihood_refi_1y_ahead                  float64   5,218     nan           9.579         18.280           0.000           1.000          100.000
+reason_apply_refi_rates                    object   1,341   1.000             nan            nan             nan             nan              nan
+reason_apply_refi_other                    object   5,001   2.000             nan            nan             nan             nan              nan
+mortgage_rate_avg_1y_ahead                float64  11,174     nan          30.875      2,002.929           0.000           4.800      200,000.000
+mortgage_rate_avg_3y_ahead                float64  11,169     nan          36.680      2,455.333           0.000           5.000      250,000.000
+mortgage_access_harder_easier_1y_ago      float64  11,249     nan           2.706          0.847           1.000           3.000            5.000
+mortgage_access_harder_easier_1y_ahead    float64  11,247     nan           2.760          0.798           1.000           3.000            5.000
+mortgage_access_harder_easier_3y_ahead    float64  11,249     nan           2.785          0.886           1.000           3.000            5.000
+likelihood_move_1y_ahead                  float64   8,604     nan          23.504         30.916           0.000          10.000          100.000
+likelihood_move_3y_ahead                  float64  11,224     nan          30.758         34.370           0.000          15.000          100.000
+value_home_at_purchase                    float64   7,991     nan     258,323.912  2,070,183.037           0.000     159,000.000  100,000,000.000
+debt_housing                              float64   5,783     nan     177,732.480  1,349,843.360           0.000     125,000.000  100,000,000.000
+debt_housing_monthly_payment              float64   5,789     nan       2,797.415     20,121.089           0.000       1,100.000      705,000.000
+mortgage_rate_on_own_home                 float64   5,079     nan           7.928        125.445           0.000           3.850        5,875.000
+likelihood_apply_home_loan_1y_ahead       float64   7,414     nan           5.352         12.911           0.000           0.000          100.000
+mortgage_rate_self_current                float64   9,570     nan         158.254      8,148.226           0.000           4.000      650,000.000
+mortgage_rate_avg_current                 float64  11,215     nan          13.177        659.355           0.000           4.250       69,420.000
+
